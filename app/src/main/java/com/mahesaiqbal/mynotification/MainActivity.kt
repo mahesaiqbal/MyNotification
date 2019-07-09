@@ -3,14 +3,23 @@ package com.mahesaiqbal.mynotification
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Build
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
 import android.support.v4.app.NotificationCompat
+import android.view.View
+import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
+
+    lateinit var notificationManager: NotificationManager
+    lateinit var builder: NotificationCompat.Builder
 
     companion object {
         val NOTIFICATION_ID = 1
@@ -22,10 +31,19 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val notificationManager: NotificationManager =
-            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        btn_send_notif.setOnClickListener { v -> sendNotification() }
+    }
 
-        val builder: NotificationCompat.Builder = NotificationCompat.Builder(this, CHANNEL_ID)
+    val runnable = Runnable { notificationManager.notify(NOTIFICATION_ID, builder.build()) }
+
+    fun sendNotification() {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("http://dicoding.com"))
+        val pendingIntent = PendingIntent.getActivity(this, 0, intent, 0)
+
+        notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        builder = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentIntent(pendingIntent)
             .setSmallIcon(R.drawable.ic_notifications_white)
             .setLargeIcon(BitmapFactory.decodeResource(resources, R.drawable.ic_notifications_white))
             .setContentTitle(resources.getString(R.string.content_title))
@@ -47,5 +65,7 @@ class MainActivity : AppCompatActivity() {
         if (notificationManager != null) {
             notificationManager.notify(NOTIFICATION_ID, notification)
         }
+
+        Handler().postDelayed(runnable, 5000)
     }
 }
